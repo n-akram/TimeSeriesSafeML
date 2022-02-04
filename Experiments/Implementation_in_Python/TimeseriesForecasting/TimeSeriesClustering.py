@@ -123,7 +123,7 @@ class KmeansClustering(TimeSeriesKMeans):
 
         return stats_centroid
 
-    def compute_mean_relative_change(self, testtimestamps, forecasts, res):
+    def compute_mean_relative_change(self, timeindex, forecasts, res):
         mean = []
         std = []
         var = []
@@ -131,7 +131,7 @@ class KmeansClustering(TimeSeriesKMeans):
         cluster_mean = []
 
 
-        for i in testtimestamps:
+        for i in timeindex:
 
             data = numpy.array(forecasts[i])
 
@@ -142,7 +142,7 @@ class KmeansClustering(TimeSeriesKMeans):
 
             cluster_mean.append(numpy.mean(self.cluster_centers_[res[i]]))
 
-        tests = pd.DataFrame({'test values': testtimestamps,
+        tests = pd.DataFrame({'time index': timeindex,
                             'mean': mean,
                             'standard deviation': std,
                             'variance': var,
@@ -170,7 +170,62 @@ class KmeansClustering(TimeSeriesKMeans):
         plt.xlim(0, self.sz)
 
         return forecast_cluster, plt
-   
+
+    def compute_std_variance_relative_change(self, timeindex, forecasts, res):
+
+        mean = []
+        std_forecast = []
+        var_forecast = []
+        cluster_assigned = []
+        cluster_mean = []        
+        cluster_std = []
+        cluster_var = []
+
+        for i in timeindex:
+
+            data = numpy.array(forecasts[i])
+
+            mean.append(numpy.mean(data))
+            std_forecast.append(numpy.std(data))
+            var_forecast.append(numpy.var(data, dtype=numpy.float64))
+            cluster_assigned.append(res[i])
+
+            cluster_mean.append(numpy.mean(self.cluster_centers_[res[i]]))  
+            cluster_centre = res[i]
+            
+            cluster = self.data[self.data_preds == cluster_centre]
+            cluster =  numpy.array(cluster)
+
+            std = numpy.std(cluster, axis=1)
+            var = numpy.var(cluster, axis=1)
+
+            std = std.flatten()
+            var = var.flatten()
+
+            std_max = std.max()
+            var_max = var.max()
+
+            cluster_std.append(std_max)
+            cluster_var.append(var_max)
+
+        tests = pd.DataFrame({'time index': timeindex,
+                            'mean': mean,
+                            'standard deviation': std_forecast,
+                            'variance': var_forecast,
+                            'cluster_assigned': cluster_assigned,
+                            'cluster_mean': cluster_mean, 
+                            'cluster_std': cluster_std,
+                            'cluster_var': cluster_var
+
+        })
+
+        tests['max std diff'] = (tests['standard deviation'] - tests['cluster_std'])
+        tests['std reltive change'] = tests['max std diff'] / abs(tests['cluster_std'])
+
+        tests['max var diff'] = (tests['variance'] - tests['cluster_var'])
+        tests['var reltive change'] = tests['max var diff'] / abs(tests['cluster_var'])
+
+        return tests   
 
 
 
