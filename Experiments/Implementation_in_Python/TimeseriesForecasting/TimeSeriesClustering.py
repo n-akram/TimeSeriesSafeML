@@ -4,6 +4,19 @@ import pandas as pd
 from tslearn.clustering import TimeSeriesKMeans
 import matplotlib.pyplot as plt
 
+import sys
+import os
+nb_dir = os.path.split(os.getcwd())[0]
+if nb_dir not in sys.path:
+    sys.path.append(nb_dir)
+
+from CVM_Distance import CVM_Dist as Cramer_Von_Mises_Dist
+from Anderson_Darling_Distance import Anderson_Darling_Dist
+from Kolmogorov_Smirnov_Distance import Kolmogorov_Smirnov_Dist
+from KuiperDistance import Kuiper_Dist
+from WassersteinDistance import Wasserstein_Dist
+from DTS_Distance import DTS_Dist # Combo of Anderson_Darling and CVM distance.
+
 class KmeansClustering(TimeSeriesKMeans):
 
     def __init__(self, num_clusters=5, random_state=23) -> None: 
@@ -123,7 +136,7 @@ class KmeansClustering(TimeSeriesKMeans):
 
         return stats_centroid
 
-    def compute_mean_relative_change(self, timeindex, forecasts, res):
+    def compute_mean_relative_change(self, timeindex, tests, res):
         mean = []
         std = []
         var = []
@@ -133,7 +146,7 @@ class KmeansClustering(TimeSeriesKMeans):
 
         for i in timeindex:
 
-            data = numpy.array(forecasts[i])
+            data = numpy.array(tests[i])
 
             mean.append(numpy.mean(data))
             std.append(numpy.std(data))
@@ -142,7 +155,7 @@ class KmeansClustering(TimeSeriesKMeans):
 
             cluster_mean.append(numpy.mean(self.cluster_centers_[res[i]]))
 
-        tests = pd.DataFrame({'time index': timeindex,
+        result = pd.DataFrame({'time index': timeindex,
                             'mean': mean,
                             'standard deviation': std,
                             'variance': var,
@@ -151,31 +164,31 @@ class KmeansClustering(TimeSeriesKMeans):
 
         })
 
-        tests['mean diff'] = (tests['mean'] - tests['cluster_mean'])
-        tests['mean relative change'] = tests['mean diff'] / abs(tests['cluster_mean'])
+        result['mean diff'] = (result['mean'] - result['cluster_mean'])
+        result['mean relative change'] = result['mean diff'] / abs(result['cluster_mean'])
 
-        self.tests_mrc = tests
+        self.tests_mrc = result
 
         return self.tests_mrc
 
-    def visualize_cluster_assignement_forecast(self, index, forecasts, res):
+    def visualize_cluster_assignement_test(self, index, tests, res):
 
-        forecast_cluster = res[index]
-        forecast = forecasts[index]
+        test_cluster = res[index]
+        test = tests[index]
 
-        for xx in self.data[self.data_preds == forecast_cluster]:
+        for xx in self.data[self.data_preds == test_cluster]:
             plt.plot(xx.flatten(), "k-", alpha=.2)
-        plt.plot(self.cluster_centers_[forecast_cluster].ravel(), "r-")        
-        plt.plot(forecast, "y-")
+        plt.plot(self.cluster_centers_[test_cluster].ravel(), "r-")        
+        plt.plot(test, "y-")
         plt.xlim(0, self.sz)
 
-        return forecast_cluster, plt
+        return test_cluster, plt
 
-    def compute_std_variance_relative_change(self, timeindex, forecasts, res):
+    def compute_std_variance_relative_change(self, timeindex, tests, res):
 
         mean = []
-        std_forecast = []
-        var_forecast = []
+        std_test = []
+        var_test = []
         cluster_assigned = []
         cluster_mean = []        
         cluster_std = []
@@ -183,11 +196,11 @@ class KmeansClustering(TimeSeriesKMeans):
 
         for i in timeindex:
 
-            data = numpy.array(forecasts[i])
+            data = numpy.array(tests[i])
 
             mean.append(numpy.mean(data))
-            std_forecast.append(numpy.std(data))
-            var_forecast.append(numpy.var(data, dtype=numpy.float64))
+            std_test.append(numpy.std(data))
+            var_test.append(numpy.var(data, dtype=numpy.float64))
             cluster_assigned.append(res[i])
 
             cluster_mean.append(numpy.mean(self.cluster_centers_[res[i]]))  
@@ -210,8 +223,8 @@ class KmeansClustering(TimeSeriesKMeans):
 
         tests = pd.DataFrame({'time index': timeindex,
                             'mean': mean,
-                            'standard deviation': std_forecast,
-                            'variance': var_forecast,
+                            'standard deviation': std_test,
+                            'variance': var_test,
                             'cluster_assigned': cluster_assigned,
                             'cluster_mean': cluster_mean, 
                             'cluster_std': cluster_std,
@@ -225,7 +238,54 @@ class KmeansClustering(TimeSeriesKMeans):
         tests['max var diff'] = (tests['variance'] - tests['cluster_var'])
         tests['var reltive change'] = tests['max var diff'] / abs(tests['cluster_var'])
 
-        return tests   
+        return tests
+
+    def _get_statistical_dist_measures(X1, X2):   
+
+        CVM_distance = Cramer_Von_Mises_Dist(X1, X2)
+        Anderson_Darling_distance = Anderson_Darling_Dist(X1, X2)
+        Kolmogorov_Smirnov_distance = Kolmogorov_Smirnov_Dist(X1, X2)
+        Kuiper_distance = Kuiper_Dist(X1, X2)
+        Wasserstein_distance = Wasserstein_Dist(X1, X2)
+        DTS_distance = DTS_Dist(X1, X2)   
+        
+        return {'Anderson_Darling_dist': Anderson_Darling_distance,
+                'CVM_dist': CVM_distance,
+                'DTS_dist':DTS_distance,
+                'Kolmogorov_Smirnov_dist':Kolmogorov_Smirnov_distance,
+                'Kuiper_dist': Kuiper_distance,
+                'Wasserstein_dist': Wasserstein_distance}
+
+    def ecdf_between_cluster_and_data(self, t, scaler, tests, res):        
+        mean = []        
+        cluster_assigned = []    
+        distances_all = []
+
+        for i in t:
+
+            data = numpy.array(tests[i])
+
+            mean.append(numpy.mean(data))    
+            cluster_assigned.append(res[i])
+
+            preds_inv = scaler.inverse_transform(data)
+            cluster_inv = scaler.inverse_transform(self.cluster_centers_[res[i]])
+            
+            distances = self._get_statistical_dist_measures(cluster_inv.flatten(), preds_inv.flatten())
+
+            distances_all.append(distances)
+
+        tests = pd.DataFrame({'test values': t,
+                            'mean': mean,                   
+                            'cluster_assigned': cluster_assigned                   
+
+        })
+        distances_df = pd.DataFrame(distances_all)
+
+        result = pd.concat([tests, distances_df], axis=1)
+
+        return result
+
 
 
 
