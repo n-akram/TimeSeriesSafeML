@@ -9,7 +9,7 @@ class DataPreparation:
         self.test_frac = test_frac
         self.window_size = window_size
 
-    def __prepareDataForTraining(self, seq):
+    def _prepareDataForTraining(self, seq):
 
         x_data = []
         y_data = []
@@ -23,17 +23,15 @@ class DataPreparation:
 
     def normalize_and_prepare_data(self, ts, scaler):
         
-        test_set_size = int(np.round(self.test_frac*len(ts)))
-        train_set = ts[:-test_set_size]    
-        test_set = ts[-test_set_size:]
+        train_set, test_set = self.splitData(ts)
 
         #Normalize data
         # scaler = MinMaxScaler(feature_range=(-1, 1))
         train_norm = scaler.fit_transform(train_set.reshape(-1, 1))
         test_norm = scaler.transform(test_set.reshape(-1, 1))       
 
-        x_train, y_train = self.__prepareDataForTraining(train_norm)
-        x_test, y_test = self.__prepareDataForTraining(test_norm)
+        x_train, y_train = self._prepareDataForTraining(train_norm)
+        x_test, y_test = self._prepareDataForTraining(test_norm)
 
         x_train = np.asarray(x_train).reshape(-1, self.window_size, 1)
         y_train = np.asarray(y_train).reshape(-1, 1)
@@ -52,6 +50,13 @@ class DataPreparation:
 
         return scaler, x_train, x_test, y_train_lstm, y_test_lstm
 
+    def splitData(self, ts):
+
+        test_set_size = int(np.round(self.test_frac*len(ts)))
+        train_set = ts[:-test_set_size]    
+        test_set = ts[-test_set_size:]
+
+        return train_set, test_set
 
    
 
