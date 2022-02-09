@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 
 import sys
 import os
-nb_dir = os.path.split(os.getcwd())[0]
+current_path = os.getcwd()
+parent = os.path.dirname(current_path)
+nb_dir = os.path.split(parent)[0]
 if nb_dir not in sys.path:
     sys.path.append(nb_dir)
 

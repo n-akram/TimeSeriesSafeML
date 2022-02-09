@@ -9,7 +9,7 @@ class DataPreparation:
         self.test_frac = test_frac
         self.window_size = window_size
 
-    def _prepareDataForTraining(self, seq):
+    def __prepareDataForTraining(self, seq):
 
         x_data = []
         y_data = []
@@ -30,8 +30,8 @@ class DataPreparation:
         train_norm = scaler.fit_transform(train_set.reshape(-1, 1))
         test_norm = scaler.transform(test_set.reshape(-1, 1))       
 
-        x_train, y_train = self._prepareDataForTraining(train_norm)
-        x_test, y_test = self._prepareDataForTraining(test_norm)
+        x_train, y_train = self.__prepareDataForTraining(train_norm)
+        x_test, y_test = self.__prepareDataForTraining(test_norm)
 
         x_train = np.asarray(x_train).reshape(-1, self.window_size, 1)
         y_train = np.asarray(y_train).reshape(-1, 1)
