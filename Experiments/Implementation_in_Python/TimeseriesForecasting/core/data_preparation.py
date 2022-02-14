@@ -50,6 +50,30 @@ class DataPreparation:
 
         return scaler, x_train, x_test, y_train_lstm, y_test_lstm
 
+    def prepare_data(self, ts):
+        
+        train_set, test_set = self.splitData(ts)            
+
+        x_train, y_train = self.__prepareDataForTraining(train_set)
+        x_test, y_test = self.__prepareDataForTraining(test_set)
+
+        x_train = np.asarray(x_train).reshape(-1, self.window_size, 1)
+        y_train = np.asarray(y_train).reshape(-1, 1)
+        x_test = np.asarray(x_test).reshape(-1, self.window_size, 1)
+        y_test = np.asarray(y_test).reshape(-1, 1)
+
+        print('x_train.shape = ',x_train.shape)
+        print('y_train.shape = ',y_train.shape)
+        print('x_test.shape = ',x_test.shape)
+        print('y_test.shape = ',y_test.shape)
+
+        x_train = torch.from_numpy(x_train).type(torch.Tensor)
+        x_test = torch.from_numpy(x_test).type(torch.Tensor)
+        y_train_lstm = torch.from_numpy(y_train).type(torch.Tensor)
+        y_test_lstm = torch.from_numpy(y_test).type(torch.Tensor)
+
+        return x_train, x_test, y_train_lstm, y_test_lstm
+
     def splitData(self, ts):
 
         test_set_size = int(np.round(self.test_frac*len(ts)))
