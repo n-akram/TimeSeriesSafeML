@@ -242,7 +242,7 @@ class KmeansClustering(TimeSeriesKMeans):
 
         return tests
 
-    def _get_statistical_dist_measures(X1, X2):   
+    def _get_statistical_dist_measures(self, X1, X2):   
 
         CVM_distance = Cramer_Von_Mises_Dist(X1, X2)
         Anderson_Darling_distance = Anderson_Darling_Dist(X1, X2)
@@ -258,10 +258,11 @@ class KmeansClustering(TimeSeriesKMeans):
                 'Kuiper_dist': Kuiper_distance,
                 'Wasserstein_dist': Wasserstein_distance}
 
-    def ecdf_between_cluster_and_data(self, t, scaler, tests, res):        
+    def ecdf_between_cluster_and_data(self, t, scaler, tests, res, clusters_wd_dist):        
         mean = []        
         cluster_assigned = []    
         distances_all = []
+        wd_dist = []
 
         for i in t:
 
@@ -269,6 +270,7 @@ class KmeansClustering(TimeSeriesKMeans):
 
             mean.append(numpy.mean(data))    
             cluster_assigned.append(res[i])
+            wd_dist.append(clusters_wd_dist[res[i]])
 
             preds_inv = scaler.inverse_transform(data)
             cluster_inv = scaler.inverse_transform(self.cluster_centers_[res[i]])
@@ -279,7 +281,8 @@ class KmeansClustering(TimeSeriesKMeans):
 
         tests = pd.DataFrame({'test values': t,
                             'mean': mean,                   
-                            'cluster_assigned': cluster_assigned                   
+                            'cluster_assigned': cluster_assigned,
+                            'cluster_wd_dist': wd_dist                   
 
         })
         distances_df = pd.DataFrame(distances_all)
@@ -287,6 +290,9 @@ class KmeansClustering(TimeSeriesKMeans):
         result = pd.concat([tests, distances_df], axis=1)
 
         return result
+
+    def compute_wasserstein_distance(self, X1, X2):        
+        return Wasserstein_Dist(X1, X2)
 
 
 
