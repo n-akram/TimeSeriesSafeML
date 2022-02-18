@@ -61,15 +61,26 @@ class KmeansClustering(TimeSeriesKMeans):
 
         plot_sz = math.ceil(self.num_clusters/2)
 
+        plt.figure(figsize=(10,10))
+
+        font = {'color':  'red',        
+        'size': 10        
+        }
+
         for yi in range(self.num_clusters):
-            plt.subplot(plot_sz, 2, 1 + yi)
+            plt.subplot(plot_sz, 3, 1 + yi)
             for xx in self.data[self.data_preds == yi]:
                 plt.plot(xx.flatten(), "k-", alpha=.2)
             plt.plot(self.cluster_centers_[yi].ravel(), "r-")
             plt.xlim(0, self.sz)
+            plt.text(0.50, 0.85,'Cluster %d' % (yi + 1), fontdict=font, transform=plt.gca().transAxes)
             if yi == 1:
-                plt.title("DBA $k$-means")
-  
+                plt.title("DTW $k$-means clustering", fontsize=18)
+
+        plt.savefig('Reliance_clustering.jpg', dpi=1200, bbox_inches='tight')
+        # plt.tight_layout()
+        plt.show()
+
 
     def get_cluster_statistics(self):
         mean = []
@@ -256,7 +267,7 @@ class KmeansClustering(TimeSeriesKMeans):
                 'DTS_dist':DTS_distance,
                 'Kolmogorov_Smirnov_dist':Kolmogorov_Smirnov_distance,
                 'Kuiper_dist': Kuiper_distance,
-                'Wasserstein_dist': Wasserstein_distance}
+                'Wasserstein distance': Wasserstein_distance}
 
     def ecdf_between_cluster_and_data(self, t, scaler, tests, res, clusters_wd_dist):        
         mean = []        
@@ -279,10 +290,10 @@ class KmeansClustering(TimeSeriesKMeans):
 
             distances_all.append(distances)
 
-        tests = pd.DataFrame({'test values': t,
-                            'mean': mean,                   
-                            'cluster_assigned': cluster_assigned,
-                            'cluster_wd_dist': wd_dist                   
+        tests = pd.DataFrame({'Test point': t,
+                            'Test point mean': mean,                   
+                            'Assigned cluster': cluster_assigned,
+                            'WD origin': wd_dist                   
 
         })
         distances_df = pd.DataFrame(distances_all)
