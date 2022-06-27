@@ -40,7 +40,7 @@ class DataPreparation:
 
         return train_set, test_set
 
-    def prepare_data(self, x_train, x_test, y_train, y_test):
+    def _prepare_data(self, x_train, x_test, y_train, y_test):
 
         x_train = np.asarray(x_train).reshape(-1, self.window_size, 1)
         y_train = np.asarray(y_train).reshape(-1, 1)
@@ -77,7 +77,7 @@ class DataPreparation:
         x_train, y_train = self._formulateTimeSeies(train_norm)
         x_test, y_test = self._formulateTimeSeies(test_norm)
 
-        x_train, x_test, y_train, y_test = self.prepare_data(x_train, x_test, y_train, y_test)
+        x_train, x_test, y_train, y_test = self._prepare_data(x_train, x_test, y_train, y_test)
 
         return scaler, x_train, x_test, y_train, y_test
 
@@ -92,7 +92,7 @@ class DataPreparation:
         x_train, y_train = self._formulateTimeSeies(train_set)
         x_test, y_test = self._formulateTimeSeies(test_set)
 
-        x_train, x_test, y_train, y_test = self.prepare_data(x_train, x_test, y_train, y_test)
+        x_train, x_test, y_train, y_test = self._prepare_data(x_train, x_test, y_train, y_test)
 
         return x_train, x_test, y_train, y_test
 
