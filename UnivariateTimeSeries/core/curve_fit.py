@@ -3,6 +3,8 @@ import math
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
+from matplotlib.ticker import MultipleLocator
+  
 
 def fit_polynomial_curve_to_data_and_visualize(x, y, degree=2, interpolation=100, xlabel='Distance', ylabel='RMSE'):
     
@@ -125,6 +127,73 @@ def sdd_performance_visualization(x, y1, y2, y3, degree=2, interpolation=100, xl
     ax3.set_ylabel('R-Squared', fontsize=10, family='monospace')
     ax3.legend(loc='best')
   
+    # Use this line of code to save figures
+    # plt.savefig(f'{label}_{xlabel}_{model}.eps', dpi=500, bbox_inches='tight')
+    plt.tight_layout()
+    plt.show()
+
+def stadre_performance_visualization(x, y1, y2, y3, degree=2, interpolation=100, xlabel='StaDRe (Wasserstein distance)', model='LSTM', label='Reliance'):
+
+    """This function returns three subplots visualizing the behaviour of SDD with three performance metrics.
+
+    :param array x: StaDRe (independent variable)
+    :param array y1: Performance in RMSE (dependent variable)
+    :param array y2: Performance in MAPE (dependent variable)
+    :param array y1: Performance in R-Squared (dependent variable)
+    :param int degree: degree of polynomial curve, defaults to 2
+    :param int interpolation: number of data points for intepolation, defaults to 100
+    :param str xlabel: label for x-axis, defaults to 'Wasserstein Distance'
+    :param str model: filename extensions to save figures, defaults to 'LSTM'
+    """
+    
+    z1 = np.polyfit(x, y1, degree)
+    z2 = np.polyfit(x, y2, degree)
+    z3 = np.polyfit(x, y3, degree)
+
+    fit1 = np.poly1d(z1)
+    fit2 = np.poly1d(z2)
+    fit3 = np.poly1d(z3)
+
+    x_min = x.min()
+    x_max = x.max()
+
+    xp = np.linspace(x_min, x_max, interpolation)
+    yp1 = fit1(xp)
+    yp2 = fit2(xp)
+    yp3 = fit3(xp)
+    
+
+    #Plotting  
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 4))
+    ax1.plot(xp, yp1, 'magenta', linestyle='dashed', linewidth=2.5, alpha = 0.6, label = 'Reliance')
+    ax1.scatter(x, y1, 50, 'magenta', "D", label = 'Reliance')
+    ax1.set_xlabel(xlabel, fontsize=10, family='monospace')
+    ax1.minorticks_on()
+    ax1.yaxis.set_minor_locator(MultipleLocator(5))
+    ax1.tick_params(which='both', width=1, length=7)
+    ax1.tick_params(which='minor', length=4)
+    ax1.set_ylabel('Root mean square error', fontsize=10, family='monospace')
+    ax1.legend(loc='best')
+
+    ax2.plot(xp, yp2, 'magenta', linestyle='dashed', linewidth=2.5, alpha = 0.6, label = 'Reliance')
+    ax2.scatter(x, y2, 50, 'magenta', "D", label = 'Reliance')
+    ax2.set_xlabel(xlabel, fontsize=10, family='monospace')
+    ax2.minorticks_on()
+    ax2.yaxis.set_minor_locator(MultipleLocator(0.5))
+    ax2.tick_params(which='both', width=1, length=7)
+    ax2.tick_params(which='minor', length=4)
+    ax2.set_ylabel('Mean absolute percentage error', fontsize=10, family='monospace')
+    ax2.legend(loc='best')
+
+    ax3.plot(xp, yp3, 'magenta', linestyle='dashed', linewidth=2.5, alpha = 0.6, label = 'Reliance')
+    ax3.scatter(x, y3, 50, 'magenta', "D", label = 'Reliance')
+    ax3.set_xlabel(xlabel, fontsize=10, family='monospace')
+    ax3.minorticks_on()
+    ax3.tick_params(which='both', width=1, length=7)
+    ax3.tick_params(which='minor', length=4)
+    ax3.set_ylabel('R-Squared', fontsize=10, family='monospace')
+    ax3.legend(loc='best')
+
     # Use this line of code to save figures
     # plt.savefig(f'{label}_{xlabel}_{model}.eps', dpi=500, bbox_inches='tight')
     plt.tight_layout()

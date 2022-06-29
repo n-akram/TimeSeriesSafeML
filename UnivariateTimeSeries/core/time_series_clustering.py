@@ -4,20 +4,7 @@ import pandas as pd
 from tslearn.clustering import TimeSeriesKMeans
 import matplotlib.pyplot as plt
 
-import sys
-import os
-current_path = os.getcwd()
-parent = os.path.dirname(current_path)
-nb_dir = os.path.split(parent)[0]
-if nb_dir not in sys.path:
-    sys.path.append(nb_dir)
-
-from CVM_Distance import CVM_Dist as Cramer_Von_Mises_Dist
-from Anderson_Darling_Distance import Anderson_Darling_Dist
-from Kolmogorov_Smirnov_Distance import Kolmogorov_Smirnov_Dist
-from KuiperDistance import Kuiper_Dist
-from WassersteinDistance import Wasserstein_Dist
-from DTS_Distance import DTS_Dist # Combo of Anderson_Darling and CVM distance.
+from core.ecdf_distance_measures import WassersteinDistance, CramerVonMisesDistance, KuiperDistance, AndersonDarlingDistance, KolmogorovSmirnovDistance, DTSDistance
 
 class KmeansClustering(TimeSeriesKMeans):
 
@@ -88,8 +75,8 @@ class KmeansClustering(TimeSeriesKMeans):
             
         
         plt.xlabel('Time', fontsize=14, family='monospace', labelpad=18)        
-        plt.savefig('clustering.jpg', dpi=500, bbox_inches='tight')
-        plt.savefig('clustering.eps', dpi=100, bbox_inches='tight')
+        # plt.savefig('clustering.jpg', dpi=500, bbox_inches='tight')
+        # plt.savefig('clustering.eps', dpi=100, bbox_inches='tight')
         # plt.tight_layout()
         plt.show()
 
@@ -267,19 +254,19 @@ class KmeansClustering(TimeSeriesKMeans):
 
     def _get_statistical_dist_measures(self, X1, X2):   
 
-        CVM_distance = Cramer_Von_Mises_Dist(X1, X2)
-        Anderson_Darling_distance = Anderson_Darling_Dist(X1, X2)
-        Kolmogorov_Smirnov_distance = Kolmogorov_Smirnov_Dist(X1, X2)
-        Kuiper_distance = Kuiper_Dist(X1, X2)
-        Wasserstein_distance = Wasserstein_Dist(X1, X2)
-        DTS_distance = DTS_Dist(X1, X2)   
+        CVM_distance = CramerVonMisesDistance().compute_distance(X1, X2)
+        Anderson_Darling_distance = AndersonDarlingDistance().compute_distance(X1, X2)
+        Kolmogorov_Smirnov_distance = KolmogorovSmirnovDistance().compute_distance(X1, X2)
+        Kuiper_distance = KuiperDistance().compute_distance(X1, X2)
+        Wasserstein_distance = WassersteinDistance().compute_distance(X1, X2)
+        DTS_distance = DTSDistance().compute_distance(X1, X2)   
         
         return {'Anderson_Darling_dist': Anderson_Darling_distance,
                 'CVM_dist': CVM_distance,
                 'DTS_dist':DTS_distance,
                 'Kolmogorov_Smirnov_dist':Kolmogorov_Smirnov_distance,
                 'Kuiper_dist': Kuiper_distance,
-                'Wasserstein distance': Wasserstein_distance}
+                'Wasserstein_dist': Wasserstein_distance}
 
     def ecdf_between_cluster_and_data(self, t, scaler, tests, res, clusters_wd_dist):        
         mean = []        
@@ -312,44 +299,10 @@ class KmeansClustering(TimeSeriesKMeans):
 
         result = pd.concat([tests, distances_df], axis=1)
 
-        return result
-
-    def ecdf_between_cluster_and_data_RE(self, t, scaler, tests, res, clusters_wd_dist):        
-        mean = []        
-        cluster_assigned = []    
-        distances_all = []
-        wd_dist = []
-
-        for val, i in enumerate(t):
-
-            # data = numpy.array(tests[i])
-
-            # mean.append(numpy.mean(data))    
-            cluster_assigned.append(res[i])
-            wd_dist.append(clusters_wd_dist[res[i]])
-
-            test_y = numpy.array(tests[val]).reshape(-1,1)
-            print("test_y", test_y)
-            preds_inv = scaler.inverse_transform(test_y)
-            cluster_inv = scaler.inverse_transform(self.cluster_centers_[res[i]])
-            
-            distances = self._get_statistical_dist_measures(cluster_inv.flatten(), preds_inv.flatten())
-
-            distances_all.append(distances)
-
-        tests = pd.DataFrame({'Test point': t,                                              
-                            'Assigned cluster': cluster_assigned,
-                            'WD origin': wd_dist                   
-
-        })
-        distances_df = pd.DataFrame(distances_all)
-
-        result = pd.concat([tests, distances_df], axis=1)
-
-        return result
+        return result    
 
     def compute_wasserstein_distance(self, X1, X2):        
-        return Wasserstein_Dist(X1, X2)
+        return WassersteinDistance().compute_distance(X1, X2)
 
 
 
