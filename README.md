@@ -28,7 +28,7 @@ The details examples can be found in the respective folders in ```UnivariateTime
 * [Akshatha Ambekar](https://github.com/Akshatha2505) ([Fraunhofer Institute for Experimental Software Engineering](https://www.iese.fraunhofer.de/))
 * [Mohammed Naveed Akram](https://github.com/n-akram) ([Fraunhofer Institute for Experimental Software Engineering](https://www.iese.fraunhofer.de/)) - naveed.akram@iese.fraunhofer.de
 * [Ioannis Sorokos](https://github.com/ISorokos) ([Fraunhofer Institute for Experimental Software Engineering](https://www.iese.fraunhofer.de/)) - ioannis.sorokos@iese.fraunhofer.de
-* [Koorosh Aslansefat](https://github.com/koo-ec) ([University of Hull](https://www.hull.ac.uk/)) - k.aslansefat-2018@hull.ac.uk
+* [Koorosh Aslansefat](https://github.com/koo-ec) ([University of Hull](https://www.hull.ac.uk/)) - k.aslansefat@hull.ac.uk
 
 ## Publication
 Akram, M. N., Ambekar, A., [Sorokos, I.](https://scholar.google.com/citations?user=a_BdLPAAAAAJ&hl=en), [Aslansefat, K.](https://scholar.google.com/citations?user=YBa4Tl8AAAAJ&hl=en), & [Schneider, D.](https://scholar.google.com/citations?hl=en&user=GPEl_r8AAAAJ) StaDRe and StaDRo: Reliability and Robustness Estimation of ML-based Forecasting using Statistical Distance Measures.In International Conference on Computer Safety, Reliability, and Security SAFECOMP 2022. [[Pre-print PDF](https://arxiv.org/abs/2206.11116v1)]
